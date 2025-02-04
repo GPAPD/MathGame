@@ -1,6 +1,9 @@
 html {
   font-size: 14px;
 }
+#main_container {
+    background-image: url('images/background.gif');
+}
 
 @media (min-width: 768px) {
   html {
