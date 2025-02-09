@@ -1,6 +1,7 @@
 
 using MathGame.Domain;
 using MathGame.Entity;
+using MathGame.Models;
 using MathGame.Service;
 using MathGame.Service.impl;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +15,9 @@ builder.Services.AddDbContext<AppDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+//SettingUp the JWTToken values
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("WebSettings : JwtOptions"));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
