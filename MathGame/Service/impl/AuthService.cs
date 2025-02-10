@@ -9,21 +9,59 @@ namespace MathGame.Service.impl
     {
         private readonly AppDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-
-        public AuthService(AppDbContext db, UserManager<ApplicationUser> userManager,RoleManager<IdentityRole> roleManager )
+        //private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IJwtTokenGenerator _jwtTokenGenerator;
+                
+        public AuthService(AppDbContext db, 
+            IJwtTokenGenerator jwtTokenGenerator,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager )
         {
             _db = db;
+            _jwtTokenGenerator = jwtTokenGenerator;
             _userManager = userManager;
-            _roleManager = roleManager;
+            //_roleManager = roleManager;
         }
 
-        public Task<LogInRequestModel> Login(LogInRequestModel model)
+        public async Task<LogInResponse> Login(LogInRequestModel model)
         {
-            throw new NotImplementedException();
+            LogInResponse logInRequestModel = new();
+
+            try
+            {
+                var user = _db.ApplicationUsers.FirstOrDefault(u => u.UserName.ToLower() == model.Email.ToLower());
+                bool isVal = await _userManager.CheckPasswordAsync(user, model.Password);
+
+                //if login fales 
+                if (isVal == false || user == null)
+                {
+                    return new LogInResponse() { User = null, Token = "" };
+
+                }
+
+                // If user was foun Generate JwtToken
+                var jwtToken = _jwtTokenGenerator.GenarateToken(user);
+
+                UserModel valUser = new();
+
+                valUser.Email = user.Email;
+                valUser.ID = user.Id;
+                valUser.Name = user.Name;
+                valUser.PhoneNumber = user.PhoneNumber;
+
+                logInRequestModel.User = valUser;
+                logInRequestModel.Token = jwtToken;
+                
+            }
+            catch (Exception ex) 
+            {
+                return null;
+            }
+
+            return logInRequestModel;
         }
 
-        public async Task<UserModel> Register(RegistrationModel model)
+        public async Task<string> Register(RegistrationModel model)
         {
             ApplicationUser user = new()
             {
@@ -38,7 +76,7 @@ namespace MathGame.Service.impl
                 //createing a user 
                 var result = await _userManager.CreateAsync(user, model.Password);
 
-                if (result.Succeeded) 
+                if (result.Succeeded)
                 {
                     var userToReturn = _db.ApplicationUsers.First(u => u.UserName == model.Email);
                     UserModel userModel = new()
@@ -48,14 +86,19 @@ namespace MathGame.Service.impl
                         Name = userToReturn.Name,
                         PhoneNumber = userToReturn.PhoneNumber,
                     };
-                    return userModel;
+                    return "";
+                }
+                else 
+                {
+                    return result.Errors.FirstOrDefault().Description;
+                
                 }
             }
             catch (Exception ex) 
             {
             
             }
-            return new UserModel();
+            return "Error Encounted";
         }
     }
 }

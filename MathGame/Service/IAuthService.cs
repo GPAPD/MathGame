@@ -4,9 +4,9 @@ namespace MathGame.Service
 {
     public interface IAuthService
     {
-        Task<UserModel> Register(RegistrationModel model);
+       public Task<string> Register(RegistrationModel model);
 
-        Task<LogInRequestModel> Login(LogInRequestModel model);
+       public Task<LogInResponse> Login(LogInRequestModel model);
 
 
 

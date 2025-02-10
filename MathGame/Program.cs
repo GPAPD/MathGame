@@ -16,16 +16,18 @@ builder.Services.AddDbContext<AppDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-//SettingUp the JWTToken values
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("WebSettings : JwtOptions"));
+//SettingUp the JWTToken option values
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("WebSettings:JwtOptions"));
+//injecting Services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
 
-//inject Services
-builder.Services.AddScoped<IAuthService, AuthService>();
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
